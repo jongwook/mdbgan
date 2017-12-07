@@ -1,0 +1,5 @@
+.idea
+.ipynb*
+__pycache__
+mdbsynth
+.DS_Store

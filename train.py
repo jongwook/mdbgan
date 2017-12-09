@@ -17,4 +17,4 @@ model.add(Dense(1, activation='linear'))
 model.summary()
 
 model.compile(loss='mse', optimizer=RMSprop(), metrics=['mae'])
-history = model.fit_generator(gen, steps_per_epoch=100, epochs=100, verbose=2)
+history = model.fit_generator(gen, steps_per_epoch=10000, epochs=1000, verbose=1)

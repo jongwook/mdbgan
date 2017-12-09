@@ -110,14 +110,21 @@ def file_sampler(dataset, type, name, shuffle=True, **kwargs):
             X = xs[:, i]
             y = ys[i]
             if y != 0:
-                yield {0: X, 1: y, 'X': X, 'y': y}
+                yield {'X': X, 'y': y}
 
 
-def sequential_generator(dataset, type, names):
+def sequential_generator(dataset, type, names, batch_size):
+    outputX = []
+    outputY = []
     while True:
         for name in names:
             for sample in file_sampler(dataset, type, name, False):
-                yield sample
+                outputX.append(sample['X'])
+                outputY.append(sample['y'])
+                if len(outputY) == batch_size:
+                    yield np.vstack(outputX), np.array(outputY)
+                    outputX = []
+                    outputY = []
 
                 
 
@@ -132,12 +139,12 @@ def generator(type, shuffle=False, num_active_streams=230, batch_size=32, **kwar
     print(len(names))
     
     if not shuffle:
-        return sequential_generator(dataset, type, names)
+        return sequential_generator(dataset, type, names, batch_size)
     else:
         streamers = [pescador.Streamer(file_sampler, dataset, type, name) for name in names]
         mux = pescador.Mux(streamers, num_active_streams, **kwargs)
         batches = pescador.buffer_stream(mux, batch_size)
-        return pescador.tuples(batches, 0, 1)
+        return pescador.tuples(batches, 'X', 'y')
 
 
     
